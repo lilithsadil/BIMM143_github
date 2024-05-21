@@ -1,0 +1,30 @@
+---
+title: "Class 13: RNASeq"
+format: html
+---
+
+## Importing Necessary Packages
+
+First, we'll have to install the "bio conductor" package
+```{r}
+#install.packages("BiocManager")
+#BiocManager::install()
+```
+Next, we'll install the DESeq2 data set within the BiocManager package
+```{r}
+#BiocManager::install("DESeq2")
+```
+
+```{r}
+library("DESeq2")
+```
+
+## Class Background
+
+The data for today's lab comes from a published RNA-Seq experiment where airway smooth muscle cells were treated with dexamethasone, a synthetic glucocorticoid steroid with anti-inflammatory effects.
+
+## Import Data
+
+## Examine Data
+
+## Analysis

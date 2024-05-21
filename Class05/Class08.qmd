@@ -1,0 +1,137 @@
+---
+title: "Class09: Halloween Candy Mini Project"
+author: "Lilith Sadil, A16470107"
+format: html
+--- 
+
+### Class 9 - 4.30.24
+
+# Halloween Candy Mini Project
+
+## 1. Importing Candy Data
+
+In today's class, we'll examinne data about candy from the "538" website. We'll start by importing the data:
+
+```{r}
+candy_file <- "candy-data.txt"
+```
+
+Now, we'll turn the
+
+```{r}
+candy = read.csv(candy_file, row.names=1)
+head(candy)
+```
+
+> Q1. How many different candy types are in this dataset?
+
+```{r}
+nrow(candy)
+```
+
+There are 85 different candies in the data set.
+
+> Q2. How many fruity candy types are in the dataset?
+
+```{r}
+sum(candy$fruity)
+```
+There are 38 fruity candies in the data set.
+
+## 2. What's Your Favorite Candy?
+
+> Q3. What is your favorite candy in the dataset and what is it’s winpercent value?
+
+My favorite candy mentioned in the dataset is the Reese's Peanut Butter cup.
+```{r}
+candy["Reese's Peanut Butter cup", ]$winpercent
+```
+The win percent of the Reese's Peanut Butter cup is 84.18%.
+
+>> Q4. What is the winpercent value for “Kit Kat”?
+
+```{r}
+candy["Kit Kat", ]$winpercent
+```
+The win percent for Kit Kat is 76.77%.
+
+> Q5. What is the winpercent value for “Tootsie Roll Snack Bars”?
+
+```{r}
+candy["Tootsie Roll Snack Bars", ]$winpercent
+```
+The winpercent of Tootsie Roll Snack Bars is 49.65%.
+
+There's a package called "skimr" which can help give a quick overview of a datset
+```{r}
+#install.packages("skimr")
+library("skimr")
+skimr::skim(candy)
+```
+> Q6. Is there any variable/column that looks to be on a different scale to the majority of the other columns in the dataset?
+
+It appears that winpercent is measured on a different scale compared to the the rest of the rows.
+
+> Q7. What do you think a zero and one represent for the candy$chocolate column?
+
+"0" and "1" in the candy$chocolate column likely refer to whether or not a candy contains chocolate (0 for "no" and 1 for "yes").
+
+> Q8. Plot a histogram of winpercent values
+
+To make a simple plot, we can use the `hist` operation in R:
+```{r}
+hist(candy$winpercent)
+```
+
+We can recreate this plot using ggplot:
+```{r}
+library(ggplot2)
+
+win_hist = ggplot(candy) +
+  aes(candy$winpercent)+
+  geom_histogram()
+win_hist
+```
+
+> Q9. Is the distribution of winpercent values symmetrical?
+
+The distribution of win percent values is not symmetrical; it's slightly skewed towards the left with a tail on the right.
+
+> Q10. Is the center of the distribution above or below 50%?
+
+```{r}
+summary(candy$winpercent)
+```
+The center of the distribution (median) lies at 47.83% which is roughly in the middle.
+
+> Q11. On average is chocolate candy higher or lower ranked than fruit candy?
+
+1. We have to find all the chocolate candies,
+2. Find their winpercents,
+3. And compare the mean of their winpercents
+```{r}
+chocolate_candy_win = candy$winpercent[as.logical(candy$chocolate)]
+# or chocolate_candy = candy$winpercent[candy$chocolate==1]
+chocolate_candy_win
+```
+This has provided us with the win percents of only the candies containing chocolate. Now we can take the mean and compare them to fruit candies
+
+```{r}
+mean.choc = mean(chocolate_candy_win)
+mean.choc
+```
+The average winpercent of candy containing chocolate is 60.92%
+```{r}
+fruit_candy_win = candy$winpercent[as.logical(candy$fruity)]
+mean.fruit = mean(fruit_candy_win)
+mean.fruit
+```
+The average winpercent of candy containing fruit is 44.12%. From this, we know that chocolate candies, on average, tend to be preferred over fruity candies.
+
+> Q12. Is this difference statistically significant?
+
+```{r}
+t.test(mean.choc, mean.fruit)
+```
+
+## 3. Overall Candy Rankings

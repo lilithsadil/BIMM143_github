@@ -1,0 +1,191 @@
+---
+title: "Class 10 - Structural Bioinformatics (pt. 1)"
+author: "Lilith Sadil, A16470107"
+format: pdf
+---
+
+# Intro to the RCSB Protein Data Bank (PDB)
+
+The main repository of biomolecular structure is the PDB \<www.rcsb.org\>.
+
+Let's see what the database contains:
+
+```{r}
+stats = read.csv("pdb_stats.csv", row.names=1)
+stats
+```
+
+> Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+```{r}
+# We cannot use: sum(stats$X.ray) since the values under the X.ray column contain commas like "2,758" which means that the numbers are read as characters instead
+
+as.numeric(stats$X.ray)
+```
+
+Our first step is to get rid of the commas in the dataset. We can use `gsub(pattern, replacement, x)` which stands for global substitution:
+
+```{r}
+x=stats$X.ray
+sum(as.numeric(gsub(",", "", x)))
+#Here, we replaced every instance of a comma in x with nothing (i.e. deletes the commas)
+```
+
+Now, we can turn this code snippet into a function in order to convert all the data in the table into numbers without commas:
+
+```{r}
+sumcomma =  function(x){
+  sum(as.numeric(gsub(",", "", x))) #We can set x to any column in "stats" in order to calculate its total
+}
+```
+
+```{r}
+sumcomma(stats$Total)
+#sumcomma(stats$Total) gives us the sum of the Total column in stats
+```
+
+To do our calculation column by column, we could do (sumcomma(stats$X.ray) / sumcomma(stats$Total)). Instead, we can use "apply" to run this calculation across all columns at once:
+
+```{r}
+apply(stats, 2, sumcomma)
+```
+
+Next, we can divide every column by the sum of the Total column, turning every column into a percent:
+
+```{r}
+apply(stats, 2, sumcomma) / sumcomma(stats$Total) 
+```
+
+From this, we can see that 84.5% of structures in the PDB are solved by X-Ray and an additional 8.7% are solved by Electron Microscopy.
+
+```{r}
+(186898/248895733) * 100
+```
+
+Only 7% of the HIV-1 protease sequences we know have structures in the PDB
+
+# Visualizing the HIV-1 Protease Structure
+
+Mol\* ("mol-star") viewer is now everywhere.
+
+> Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+Our resolution is set to 2 angstroms; in order to see hydrogen, we would need to increase the resolution to 1 angstrom
+
+If we want to insert our image from Mol\* into our document, we use the camera icon to take and download a picture, move the image into our project folder for R, and then insert the image name into the syntax below:
+
+![](1HSG.png)
+
+In the image below, the 1HSG protein is shown with the two ASP25 residues (one on each homodimer) and the critical central water molecule highlighted
+
+![](1HSG2.png)
+
+# Introduction to Bio3D in R
+
+```{r}
+library(bio3d)
+```
+
+```{r}
+pdb = read.pdb("1hsg")
+pdb
+```
+
+```{r}
+head(pdb$atom)
+#Tells us the atoms in the structure & their positions (ex. CA = Carbon at position alpha in the amino acid), which chain of the homodimer the atoms are in...
+```
+
+```{r}
+pdbseq(pdb)[25]
+#Tells us that the 25th residue in the structure is "D', Asp
+```
+
+## Predicting functional motions of a single structure
+
+We can do a bioinformatics prediction of functional motions (i.e. flexibility/dynamics):
+```{r}
+pdb2=read.pdb("6s36")
+pdb2
+```
+
+```{r}
+m = nma(pdb) # nma stands for normal mode analysis; joins all amino acids with "springs" and predicts how they may move
+m
+plot(m)
+#plotting the normal mode analysis shows that there are certain regions of the protein that are more susceptible to movemenet than others; some regions are more rigid/fixed
+```
+
+
+We can use the following code to create a trajectory plot of the protein's movement. This file gets saved into our R files. We can then import it to Mol* & watch the animation run.
+```{r}
+mktrj(m, file="adk_m7.pdb")
+```
+
+
+## Comparative Analysis of Protein Structures
+
+Here, we will work through a complete pipeline of analysis for a given protein family starting from one single database ID for a member of the family all the way to a deeper understanding of structure, dynamics, and function.
+
+```{r}
+library(bio3d)
+```
+
+Here, we're fetching the sequence from "1ake_A" in the bio3d database:
+```{r}
+id = "1ake_A"
+aa = get.seq(id)
+aa
+```
+Now, we're looking through the NCBI databse for the sequence we found above:
+```{r}
+b = blast.pdb(aa)
+```
+This is what the NCBI search should return:
+```{r}
+hits <- NULL
+hits$pdb.id <- c('1AKE_A','6S36_A','6RZE_A','3HPR_A','1E4V_A','5EJE_A','1E4Y_A','3X2S_A','6HAP_A','6HAM_A','4K46_A','3GMT_A','4PZL_A')
+```
+Now, we'll download the related PDB files for our next steps:
+```{r}
+# Download releated PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+Next, we have to be sure all the necessary packages are downloaded:
+```{r}
+install.packages("devtools")
+install.packages("BiocManager")
+
+BiocManager::install("msa")
+```
+
+```{r}
+devtools::install_bitbucket("Grantlab/bio3d-view")
+```
+
+
+
+```{r}
+# Align releated PDBs
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+```
+
+```{r}
+pdbs
+```
+
+```{r}
+# Perform PCA
+pc.xray <- pca(pdbs)
+plot(pc.xray)
+```
+
+```{r}
+# Visualize first principal component
+pc1 <- mktrj(pc.xray, pc=1, file="pc_1.pdb")
+```
+
+
+
+
+

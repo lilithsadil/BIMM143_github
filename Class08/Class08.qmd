@@ -1,0 +1,216 @@
+---
+title: "Class08_Breast Cancer Mini Project"
+author: "Lilith Sadil, A16470107"
+format: pdf
+---
+
+## About
+
+In today's lab, we'll work with fine needle aspiration (FNA) of breast mass data from the University of Wisconsin.
+
+## Data Import
+
+Here, we'll import the FNA data as "fna.data" then save it as a data set "wisc.df" then look at the first few rows of the dataset:
+
+```{r}
+fna.data="WisconsinCancer.csv"
+wisc.df = read.csv(fna.data, row.names=1)
+head(wisc.df)
+```
+
+> Q1. How many observations/patients/individual samples are in this dataset?
+
+```{r}
+nrow(wisc.df)
+```
+
+There are 569 patient observations.
+
+> Q2. How many of the observations have a malignant diagnosis?
+
+```{r}
+#wisc.df[,1] or wisc.df$diagnosis will give you all the values in column 1. To see the number of "B" vs "M" diagnoses, we can use a "table" function:
+table(wisc.df[,1]) 
+# we can also use sum(wisc.df$diagnosis=="M")
+```
+
+There are 212 malignant cases of the 569 patients.
+
+> Q3. How many variables/features in the data are suffixed with "\_mean"?
+
+```{r}
+colnames(wisc.df) # prints out all the column names in the data set
+```
+
+```{r}
+#the grep function helps find patterns among data points
+grep("_mean", colnames(wisc.df))
+length(grep("_mean", colnames(wisc.df)))
+#using additional inputs like ignore.case=FALSE will make the code not case-sensitive
+```
+
+From this, we know that columns 2, 3, 4, 5, 6, 7, 8, 9, 10, and 11 all have "\_mean" in the name. By applying the `length` feature, we can count the number of columns with "\_mean" in the name. Here, that value is 10.
+
+## Initial Analysis
+
+Before analyzing the data, we want to remove the expert diagnosis column (i.e. the answer) from our dataset) and reassign it to its own variable:
+
+```{r}
+diagnosis = as.factor(wisc.df$diagnosis)
+head(diagnosis)
+```
+
+```{r}
+# We can use -1 here to remove the first column ("diagnosis")
+wisc.data = wisc.df[,-1]
+```
+
+## Clustering
+
+Now, we can try a `kmeans()` clustering first:
+
+```{r}
+km=kmeans(wisc.data, centers=2)
+head(km$cluster)
+```
+
+```{r}
+table(km$cluster)
+```
+
+Applying the table function to our clustering of the data tells us that there are 131 patients with a "1" diagnosis and 438 patients with a "2" diagnosis
+
+To make a cross table to compare our clustering to the row of professional diagnoses:
+
+```{r}
+table(km$cluster, diagnosis)
+```
+
+This chart gives us an idea of the true/false positive diagnoses
+
+Next, let's try using `hclust()` to group the data:
+
+```{r}
+distance = dist(wisc.data)
+hc = hclust(distance)
+hc
+```
+
+Now, we can plot the hc data into a dendrogram & draw a line to separate the two groups (malignant & benign). In this case, though, it's not easy to determine where the two groups should be split:
+
+```{r}
+plot(hc)
+abline(h=3500, col="red")
+```
+
+This tree is hard to read and doesn't account for the fact that out variables use different units of measurement; we have to scale the data first so that the smaller units with much larger values don't dominate.
+
+## PCA
+
+Since the dendrogram we obtained through `hclust` is not very readable, we will have to re-scale the data first
+
+We can look at the standard deviation of each
+
+```{r}
+round(apply(wisc.data, 2, sd))
+```
+
+The standard deviations are very large for some categories (like area_worst) so scaling is appropriate here. We can try using scale=TRUE in prcomp()
+
+```{r}
+wisc.pr = prcomp(wisc.data, scale=TRUE)
+summary(wisc.pr)
+```
+
+Now, PC1 covers only 44% of the data variance, PC2 covers an additional 19%... When we plot, we'll have to use more than just PC1 and PC2 - maybe we'll use PC3 as well in order to capture over 70% of the data variance.
+
+> Q4. From your results, what proportion of the original variance is captured by the first principal components (PC1)?
+
+44.27%
+
+> Q5. How many principal components (PCs) are required to describe at least 70% of the original variance in the data?
+
+3 PCs
+
+> Q6. How many principal components (PCs) are required to describe at least 90% of the original variance in the data?
+
+7 PCs
+
+To generate our main PCA plot:
+
+```{r}
+library(ggplot2)
+results = as.data.frame(wisc.pr$x)
+ggplot(results)+
+  aes(x=PC1, y=PC2, col=diagnosis)+
+  geom_point()
+head(results)
+```
+
+> Q7. What stands out to you about this plot? Is it easy or difficult to understand? Why?
+
+While the plot is not colored, it doesn't make much sense since there are many data points and no apparent patter. Coloring the plot, however, shows us that we can draw a line across the plot and separate the benign and malignant diagnoses. Now, we can more easily cluster the data since two distinct categories were formed.
+
+> Q8. Generate a similar plot for principal components 1 and 3. What do you notice about these plots?
+
+```{r}
+library(ggplot2)
+results = as.data.frame(wisc.pr$x)
+ggplot(results)+
+  aes(x=PC1, y=PC3, col=diagnosis)+
+  geom_point()
+head(results)
+```
+
+The plot still shows fairly discrete categories but comparing against PC3 gives less solid borders between categories.
+
+Using the minimum number of principal components required to describe at least 90% of the variability in the data, create a hierarchical clustering model with the linkage method="ward.D2". We use Ward’s criterion here because it is based on multidimensional variance like principal components analysis. Assign the results to wisc.pr.hclust.
+
+```{r}
+#wisc.pr$x[,1:7] selects PC1-7; columns 1 to 7; covers 90% of variance in the data
+d = dist(wisc.pr$x[,1:7]) # now we make a distance matrix of this
+hc = hclust(d, method="ward.D2")
+plot(hc)
+```
+
+A dendrogram with far more distinct groupings is formed compared to earlier in lab (using `hclust` without any scaling)
+
+Now, we'll cut the tree into values/categories of 1 and 2:
+
+```{r}
+grps = cutree(hc, k=2) #could replace k=2 with h=80 (cuts at height of 2 instead of forming 2 groups, k=2)
+table(grps)
+```
+
+There are 216 patients in group 1 and 353 patients in group 2.
+
+```{r}
+plot(wisc.pr$x[,1:2], col=grps)
+# or plot(results$PC1, results$PC2, col=grps)
+```
+
+## Prediction
+
+We can use our PCA result (model) to make predictions - that is, take new unseen data and project it onto new PC variables.
+
+The `predict` function takes the new data (must have same columns/format as the other data) and projects it onto our old results.
+
+```{r}
+#url = "new_samples.csv"
+url = "https://tinyurl.com/new-samples-CSV"
+new = read.csv(url)
+npc = predict(wisc.pr, newdata=new)
+head(npc)
+```
+
+Here, we are taking 2 patients from the new data set and plotting them as points against the rest of our data. From this, we can see that patient 2 is likely benign while patient 1 is likely malignant.
+
+```{r}
+plot(results$PC1, results$PC2, col=grps)
+points(npc[,1], npc[,2], col="blue", pch=16, cex=3)
+text(npc[,1], npc[,2], labels=c(1,2), col="white")
+```
+
+## Conclusions
+
+PCA (principal component analysis) is a useful way of analyzing large data sets by finding new variables (PCs) that capture the most variance from the original variables in the data set. In other words, it's a dimensionality reduction method - condenses our data down to fewer dimensions/axes.
