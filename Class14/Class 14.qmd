@@ -1,0 +1,245 @@
+---
+title: "Class 14: RNA Seq Mini-Project"
+author: "Lilith Sadil"
+format: pdf
+toc: true
+---
+
+Here, we'll run through a complete RNASeq analysis.
+
+#Data Import
+
+First, we'll library our necessary packages and import relevant data files:
+
+```{r}
+library(DESeq2)
+metaFile <- "data/GSE37704_metadata.csv"
+countFile <- "data/GSE37704_featurecounts.csv"
+```
+
+To take a quick look at the data we imported:
+
+```{r}
+colData = read.csv(metaFile, row.names=1)
+head(colData)
+countData = read.csv(countFile, row.names=1)
+head(countData)
+```
+
+# Setup for DESeq
+
+We need to remove the odd first \$length col
+
+```{r}
+countData = as.matrix(countData[,2:7])
+head(countData)
+```
+
+Filter count data where you have 0 read count across all samples.
+
+```{r}
+#Finds where there are "0" values in columns 1-6 in the countData dataset
+#zero.vals = which(countData[,1:6]==0, arr.ind=TRUE)
+#Finds unique instances
+#to.rm = unique(zero.vals[,1])
+#removes the set of values with 0 from countData
+#countData = countData[-to.rm, ]
+#View the results
+#head(countData)
+```
+
+```{r}
+to.keep.inds = rowSums(countData)>0
+countData = countData[to.keep.inds,]
+head(countData)
+```
+
+# Running DESeq
+
+```{r}
+dds = DESeqDataSetFromMatrix(countData=countData,
+                             colData=colData,
+                             design=~condition)
+dds = DESeq(dds)
+head(dds)
+```
+
+```{r}
+res = results(dds, contrast=c("condition", "hoxa1_kd", "control_sirna"))
+head(res)
+```
+
+```{r}
+summary(res)
+```
+
+4349 genes are upregulated and 4396 genes are downregulated with a p-value cutoff of 0.1.
+
+# Add gene annotation data (gene names etc.)
+
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+
+columns(org.Hs.eg.db)
+
+res$symbol = mapIds(org.Hs.eg.db,
+                    keys=row.names(res), 
+                    keytype="ENSEMBL",
+                    column="SYMBOL",
+                    multiVals="first")
+
+res$entrez = mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="ENTREZID",
+                    multiVals="first")
+
+res$name =   mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="GENENAME",
+                    multiVals="first")
+
+head(res, 10)
+```
+
+# Results Visualization
+
+```{r}
+plot( res$log2FoldChange, -log(res$padj) )
+```
+
+```{r}
+# Make a color vector for all genes
+mycols <- rep("gray", nrow(res) )
+
+# Color red the genes with absolute fold change above 2
+mycols[ abs(res$log2FoldChange) > 2 ] = "blue"
+
+# Color blue those with adjusted p-value less than 0.01 and absolute fold change more than 2
+inds = ((res$padj > 0.01) & (abs(res$log2FoldChange) > 2))
+mycols[ inds ] = "red"
+
+plot( res$log2FoldChange, -log(res$padj), col=mycols, xlab="Log2(FoldChange)", ylab="-Log(P-value)" )
+```
+
+```{r}
+library(EnhancedVolcano)
+
+x <- as.data.frame(res)
+
+EnhancedVolcano(x,
+    lab = x$symbol,
+    x = 'log2FoldChange',
+    y = 'pvalue')
+```
+
+# Save our Results
+
+```{r}
+res = res[order(res$pvalue),]
+write.csv(res, file="deseq_results.csv")
+```
+
+# Pathway Analysis (KEGG, GO, Reactome)
+
+```{r}
+#Library the necessary packages
+library(pathview)
+library(gage)
+library(gageData)
+
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+
+#Helps us focus in on metabolic pathways
+kegg.sets.hs = kegg.sets.hs[sigmet.idx.hs] 
+
+#Look at the first 3 pathways:
+head(kegg.sets.hs, 3)
+```
+
+```{r}
+foldchanges = res$log2FoldChange
+names(foldchanges) = res$entrez
+head(foldchanges)
+```
+
+Now we run the gage analysis
+
+```{r}
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+attributes(keggres)
+```
+
+```{r}
+head(keggres$less)
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110", kegg.native=FALSE)
+```
+
+![](hsa04110.pathview.png)
+
+```{r}
+keggrespathways <- rownames(keggres$greater)[1:5]
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+![](hsa04640.pathview.png) ![](hsa04630.pathview.png) ![](hsa00140.pathview.png) ![](hsa04142.pathview.png) ![](hsa04330.pathview.png)
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04740")
+```
+
+![](hsa04740.pathview.png)
+
+Here are the downregulated pathway diagrams:
+
+```{r}
+keggrespathways2 <- rownames(keggres$less)[1:5]
+keggresids2 = substr(keggrespathways2, start=1, stop=8)
+keggresids2
+pathview(gene.data=foldchanges, pathway.id=keggresids2, species="hsa")
+```
+
+![](hsa04110.pathview.png) ![](hsa03030.pathview.png) ![](hsa03013.pathview.png) ![](hsa03440.pathview.png) ![](hsa04114.pathview.png)
+
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+```
+
+```{r}
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+lapply(gobpres, head)
+```
+
+```{r}
+sig_genes = res[res$padj <= 0.05 & !is.na(res$padj), "symbol"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+```
+
+```{r}
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+This code block above created a table txt file which can be uploaded to the reactome website in order to visualize the pathway analysis in an online browser.
+
+This shows that the "cell cycle" pathway has the most significant "entities P-value" at a value of 2.43E-4. This aligns with the KEGG results since the first diagram we obtained through the KEGG analysis was a cell cycle diagram (hsa04110). Different amounts of information existing in each database may cause these results to vary slightly.
+
+![](R-HSA-68962.png)

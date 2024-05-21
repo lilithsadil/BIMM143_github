@@ -1,0 +1,169 @@
+---
+title: "Find a Gene"
+author: "Lilith Sadil"
+format: html
+---
+
+```{r}
+library(ComplexHeatmap)
+
+## using your provided data as df_pathways
+
+Heatmap(data, name = "log p-value", column_title = "Genesets", 
+        row_names_max_width = unit(12, "cm"),
+        cluster_rows = FALSE, cluster_columns = FALSE,  row_names_side = "left")
+#> Warning: The input is a data frame, convert it to the matrix.
+```
+
+```{r}
+library(bio3d)
+mat = bio3d::seqidentity(bio3d::read.fasta("result (1).fasta"))
+matrix=as.matrix(mat)
+heatmap(matrix, cexCol = 0.7, cexRow = 0.7)
+```
+
+```{r}
+consen = consensus(read.fasta("result (1).fasta"))
+vec = (consen$seq)
+my_string <- paste(vec, collapse = "")
+my_string
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(bio3d)
+library(ggplot2)
+library(reshape2)
+
+# Read alignment file (example using PDB file)
+alignment <- read.fasta("result (1).fasta")
+```
+
+```{r}
+# Load required libraries
+library(bio3d)
+
+# Read FASTA file
+sequences <- read.fasta("result (1).fasta")
+num_seqs=9
+
+# Calculate sequence identities
+identity_matrix <- pairwise(seq_vector, seq_vector, method = "identity")
+
+# Convert the result to a matrix
+identity_matrix <- matrix(identity_matrix, nrow = num_seqs, ncol = num_seqs)
+
+# Calculate sequence identities
+for (i in 1:num_seqs) {
+  for (j in 1:num_seqs) {
+    identity_matrix[i, j] <- seqidentity(sequences[[i]], sequences[[j]])
+  }
+}
+
+# Print the identity matrix
+print(identity_matrix)
+```
+
+```{r}
+# Convert matrix to data frame for plotting
+identity_df <- melt(identity_matrix)
+
+# Plot heatmap
+ggplot(identity_df, aes(Var1, Var2, fill=value)) +
+  geom_tile() +
+  scale_fill_gradient(low="white", high="red") +
+  theme_minimal() +
+  labs(title="Sequence Identity Heatmap", x="Sequence", y="Sequence") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+library(bio3d)
+
+# Define sequences
+sequence_1 <- "AKFCFHTFGDRVKLWITINEPYVCAKLGHEDGIHAPGLKEPGTAAYLVGHNMLRAHAMAWHSYDSLYRAQQEGAVSLAINSDWLEPLNAGCTEDIAATERLLAFTLGWFAWPVFVTGDYPEVMRSAIDAQSEKSGCSSRLPSFSKDEPAILGTADFFALNYYTSRKMKQGGGCGE... "
+sequence_2 <- "ADLLFSRFGRRVKFWITLNEPYIVANLGYGYGTFAPGIYNRQ----YIAAHNLIKAHAEAWHLYNDKYRATQGGIISITINSDWAEPRNPYKQEDVDATNRYLQFFIGWFAHPIF-RGDYPELMKTIIRERSLAVGLPESRLPEFTPEEIKRINGTHDYFGFNHYCS-VLSYPVNLGKQQDYEADRGTGTTHDRTWIESGSFWLKITPFGFRKILKFIKDEYGNPPLYVTENGISERGEVNLNDVHRKYYYEQYINQALKA"
+sequence_3 <- "ADLLFSRFGQRVKFWITLNEPYIVANLGYGYGTFAPGIFNRQ----YIAAHNLIKAHAEAWHLYNDEYRATQGGIISITINSDWAEPRNPYKQEDVDATNRYLQFFIGWFAHPIF-RGDYPELMKTIIRERSLAVGLPESGLPEFTPEEIKRINGTHDYFGLNHYCS-VLSYPVNLGKQQDYEGDRGTGVSHDRTWIESGSFWLKITPFGFRKLLKFIKDE-------KYFYEQYINQALKA"
+sequence_4 <- "ADLIFSRLGPKVKSWLTLNEPYNVANLGYGYGESAPGIGSRPGTLPYIVGHTLIKAHAEAWHLYNDKYRATQKGIISISLNSDWTEPRNPYKQEDIDAARRVLQFFIGWFAHPVF-NGDYSNMMKTIIRERSLAAGLLKSRLPEFTPEEIKRIKGTHDFFGFNHYTS-VLAFPVNYGDLQSYDGDRGAGTLSDRTWLESGSFWLKVSPFGFRRVLKFIKEEYGNPPIIITENGMSERGPIDLNDIHRSYYYEKYINQMLKA"
+sequence_5 <- "ADLIFSRLGNNVKHWITINEPYNIAMVGHGYGVAAPGISFRPGTLPYIVGHNLIKAHAEVWHLYNDKYRAVQKGIISITINSDWSEPRNPHKQEDIDAARRVVQFYIGWFAHPIY-NGDYNDVMKTVIRERSLAAGLSKSRLPEFTPEEIKRIKGTYDYFGFNHYTT-VLAFPVDFGNLQHYDADRGAGTVVDRTWLDSGSAWLKVTPFGFRRILNFIKEEYGHPPIIITENGISERGPTDLNDTLRTYYYEKYINQALKA"
+sequence_6 <- "ADLIFSRLGHKVKFWITINEPYNVANIGHGYGAAAPGISFRPGTLPYIVGHSLLKAHAEAWHLYNDKYRAKQQGIISITINSDWSEPRNPYKQEDIDAAKRVVQFYIGWFAHPVF-NGDYSNMMKTIIRERSLAANLTTSRLPEFTPAEIKRIKGTYDYFGFNHYTT-VLAFPVNYGNLQHYDADRGTGTIADRSWLDSGSSWLKVSPFGFRRILNFIKAEYGNPPIIITENGISERGPIDLNDTLRSYYYEQYINQLLKA"
+sequence_7 <- "ADLIFSRFGHKVKFWITINEPYNVANIGHGYGAAAPGISFRPGTLPYIVGHSLLKAHAEAWHLYNDKYRAKQQGIISITINSDWSEPRNPYKQEDIDAAKRVVQFYIGWFAHPVF-NGDYSNIMKTIIRERSLADNLTKSRLPEFTPAEIKRIKGTYDYFGFNHYTT-VLAFPVNYGNLQHYDADRGAGTIADRSWLDSGSSWLKVSPFGFRRILNFIKTEYGNPPIIITENGISERGPI... "
+sequence_8 <- "ADLIFSRLGHKVKFWITINEPYNIANVGHGYGAAAPGISFRPGTLPYIVGHNLLKSHAEVWHLYNDTYRAEQKGIISITINSDWSEPRNPYKQEDIDAARRVVQFYIGWFAHPVF-NGDYSNMMKTIIRERSLAAGLLKSRLPEFTAEEIKRIKGTYDYFGFNHYTT-VLAFPVNYGDLQHYDADRGAGTIADRTWLDSGSSWLKVSPFGFRRILNFIKEEYGNPSIIITENGMSERGPI... "
+sequence_9 <- "ADLIFSRLGHKVKFWITINEPYNIANVGHGYGAAAPGISFRPGTLPYIVGHNLLKAHAEAWHLYNDKYRAKQQGIISITINSDWSEPRNPYKQEDIDAAKRVVQFYIGWFAHPVF-NGDYSNMMKTIIRERSFAAGLLKSRLPEFTAEEIKRIKGTYDYFGFNHYTT-VLAFPVNYGNLQHYDADRGAGTIADRTWLDSGSSWLKVSPFGFRKILNFIKKEYGNPPIIITENGMSERGPI... "
+
+# Create a list of sequences
+sequences <- list(sequence_1, sequence_2, sequence_3, sequence_4, sequence_5, sequence_6, sequence_7, sequence_8, sequence_9)
+
+# Get the number of sequences
+num_seqs <- length(sequences)
+
+# Initialize identity matrix
+identity_matrix <- matrix(0, nrow=num_seqs, ncol=num_seqs)
+
+# Calculate sequence identities
+for (i in 1:num_seqs) {
+  for (j in 1:num_seqs) {
+    identity_matrix[i, j] <- seqidentity(sequences[[i]], sequences[[j]])
+  }
+}
+
+# Print the identity matrix
+print(identity_matrix)
+```
+
+```{r}
+#plot
+library(tidyverse)
+mat %>%
+as.data.frame %>%
+rownames_to_column("seq") %>%
+gather(seq2, pid, - 1) %>%
+mutate(seq = fct_inorder(seq),
+seq2 = fct_inorder(seq2),
+pid2 = ifelse(!is.na(pid), paste0(pid * 100, "%"), NA_character_)) %>%
+ggplot()+
+geom_tile(aes(x = seq, y = seq2, fill = pid)) +
+scale_fill_gradient(low = "white",
+high = "13ae4b",
+na.value = "white",
+breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+limits = c(0, 1)) +
+geom_text(aes(x = seq, y = seq2, label = pid2)) +
+scale_x_discrete(position = "top") +
+theme(legend.position = "none") +
+xlab("") +
+ylab("") +
+coord_equal()
+```
+
+```{r}
+library(gplots)
+```
+
+```{r}
+x = read.fasta("result (1).fasta")
+y = matrix(x, nrow = 9, ncol = 9)
+view(y)
+```
+
