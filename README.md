@@ -12,7 +12,7 @@ My classwork for BIMM143 S24 at UC San Diego.
 - **Class 10** [Structural Bioinformatics (pt. 1)](https://github.com/lilithsadil/BIMM143_github/blob/main/Class10/Classs-10.pdf)
 - **Class 11** [RNASeq Galaxy & Population Analysis](https://github.com/lilithsadil/BIMM143_github/blob/main/Class11/Class-11-Homework.pdf)
 - **Class 13** [DESeq Lab](https://github.com/lilithsadil/BIMM143_github/blob/main/Class13/Class-13.pdf)
-- **Class 14** [RNA Seq Mini Project](https://github.com/lilithsadil/BIMM143_github/blob/main/Class14/Class-14.pdf)
+- **Class 14** [RNA Seq Mini Project](https://github.com/lilithsadil/BIMM143_github/blob/main/Class14/Class%2014.md)
 - **Class 17** [DESeq2 mini project](https://github.com/lilithsadil/BIMM143_github/blob/main/Class17/Class%2017%20Extra%20Credit.md)
 - **Class 18** [Analyzing Sequencing Data in the Cloud](https://github.com/lilithsadil/BIMM143_github/blob/main/Class18/Class%2018.md)
 - **Class 19** [Lab19 Cancer Mutation Mini Project]()
