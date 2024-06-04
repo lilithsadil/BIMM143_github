@@ -1,6 +1,6 @@
 ---
 title: "Class 13: RNASeq"
-format: pdf
+format: gfm
 ---
 
 ## Importing Necessary Packages
