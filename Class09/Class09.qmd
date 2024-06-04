@@ -1,7 +1,7 @@
 ---
 title: "Class09: Halloween Candy Mini Project"
 author: "Lilith Sadil, A16470107"
-format: pdf
+format: gfm
 ---
 
 ### Class 9 - 4.30.24
