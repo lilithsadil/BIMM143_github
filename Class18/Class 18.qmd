@@ -1,7 +1,7 @@
 ---
 title: "Class 18 - Pertussis and the CMI-PB project"
 author: "Lilith Sadil"
-format: pdf
+format: gfm
 ---
 
 ## Background
