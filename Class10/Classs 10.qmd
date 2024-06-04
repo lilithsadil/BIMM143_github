@@ -1,7 +1,7 @@
 ---
 title: "Class 10 - Structural Bioinformatics (pt. 1)"
 author: "Lilith Sadil, A16470107"
-format: pdf
+format: gfm
 ---
 
 # Intro to the RCSB Protein Data Bank (PDB)
