@@ -1,7 +1,7 @@
 ---
 title: "Class 7: Machine Learning 1"
 author: "Lilith Sadil, A16470107"
-format: pdf
+format: gfm
 ---
 
 Today, we'll start out multi-part exploration of some key machine learning methods. We'll begin with clustering (a way of bunching/grouping data based off of similarity/patterns and then using dimensional reduction).
