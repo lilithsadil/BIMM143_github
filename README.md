@@ -2,7 +2,7 @@
 My classwork for BIMM143 S24 at UC San Diego. 
 [BIMM143 Spring 2024](https://bioboot.github.io/bimm143_S24/schedule/)
 
-[Find a Gene Project]()
+[Find a Gene Project](https://github.com/lilithsadil/BIMM143_github/blob/main/Find%20a%20Gene/Find_a_Gene_Project__BIMM_143.pdf)
 
 - **Class 5** [Data visualization using ggplot](https://github.com/lilithsadil/bimm143_github/blob/main/Class05/Class05.pdf)
 - **Class 6** [Functions in R](https://github.com/lilithsadil/BIMM143_github/blob/main/Class06/Class06.md)
