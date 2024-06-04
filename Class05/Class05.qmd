@@ -1,7 +1,7 @@
 ---
 title: "Class 5: Data Visualization with ggplot"
 author: "Lilith Sadil (A16470107)"
-format: html
+format: gfm
 ---
 
 ## Introduction
