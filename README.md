@@ -4,7 +4,7 @@ My classwork for BIMM143 S24 at UC San Diego.
 
 [Find a Gene Project](https://github.com/lilithsadil/BIMM143_github/blob/main/Find%20a%20Gene/Find_a_Gene_Project__BIMM_143.pdf)
 
-- **Class 5** [Data visualization using ggplot](https://github.com/lilithsadil/bimm143_github/blob/main/Class05/Class05.pdf)
+- **Class 5** [Data visualization using ggplot](https://github.com/lilithsadil/BIMM143_github/blob/main/Class05/Class05.md)
 - **Class 6** [Functions in R](https://github.com/lilithsadil/BIMM143_github/blob/main/Class06/Class06.md)
 - **Class 7** [Machine Learning 1](https://github.com/lilithsadil/BIMM143_github/blob/main/Class07/Class%207-%20Machine%20Learning%201.md)
 - **Class 8** [Breast Cancer Mini Project](https://github.com/lilithsadil/BIMM143_github/blob/main/Class08/Class08.md)
