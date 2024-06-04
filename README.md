@@ -1,4 +1,4 @@
-# bimm143_github
+# BIMM143_github
 My classwork for BIMM143 S24 at UC San Diego. 
 [BIMM143 Spring 2024](https://bioboot.github.io/bimm143_S24/schedule/)
 
